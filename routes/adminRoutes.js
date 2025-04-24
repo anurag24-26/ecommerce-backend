@@ -5,8 +5,6 @@ const asyncHandler = require("express-async-handler");
 const generateToken = require("../utils/generateToken"); // Remove .js extension
 
 const router = express.Router();
-
-// Admin Registration
 router.post(
   "/register",
   asyncHandler(async (req, res) => {
@@ -19,20 +17,26 @@ router.post(
       throw new Error("Admin already exists");
     }
 
-    // Create a new admin
-    const admin = new Admin({
-      name,
-      email,
-      password,
-    });
+    try {
+      // Create a new admin
+      const admin = new Admin({
+        name,
+        email,
+        password,
+      });
 
-    // Save admin to DB
-    await admin.save();
-    res.status(201).json({
-      message: "Admin registered successfully",
-    });
+      // Save admin to DB
+      await admin.save();
+
+      res.status(201).json({
+        message: "Admin registered successfully",
+      });
+    } catch (error) {
+      res.status(500).json({ message: error.message || "Server Error" });
+    }
   })
 );
+
 // Admin Login
 router.post(
   "/login",
