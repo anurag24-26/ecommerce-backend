@@ -6,6 +6,33 @@ const generateToken = require("../utils/generateToken"); // Remove .js extension
 
 const router = express.Router();
 
+// Admin Registration
+router.post(
+  "/register",
+  asyncHandler(async (req, res) => {
+    const { name, email, password } = req.body;
+
+    // Check if admin already exists
+    const adminExists = await Admin.findOne({ email });
+    if (adminExists) {
+      res.status(400);
+      throw new Error("Admin already exists");
+    }
+
+    // Create a new admin
+    const admin = new Admin({
+      name,
+      email,
+      password,
+    });
+
+    // Save admin to DB
+    await admin.save();
+    res.status(201).json({
+      message: "Admin registered successfully",
+    });
+  })
+);
 // Admin Login
 router.post(
   "/login",
