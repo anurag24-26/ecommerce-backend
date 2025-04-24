@@ -1,7 +1,7 @@
 // routes/adminRoutes.js
 import express from "express";
 import Admin from "../models/Admin.js";
-import Product from "../models/productModel.js"; // Reuse your product model
+import Product from "../models/Product.js"; // Reuse your product model
 import asyncHandler from "express-async-handler";
 import generateToken from "../utils/generateToken.js"; // Token generator function
 
