@@ -1,9 +1,8 @@
-// routes/adminRoutes.js
-import express from "express";
-import Admin from "../models/Admin.js";
-import Product from "../models/Product.js"; // Reuse your product model
-import asyncHandler from "express-async-handler";
-import generateToken from "../utils/generateToken.js"; // Token generator function
+const express = require("express");
+const Admin = require("../models/Admin"); // Remove .js extension
+const Product = require("../models/Product"); // Remove .js extension
+const asyncHandler = require("express-async-handler");
+const generateToken = require("../utils/generateToken"); // Remove .js extension
 
 const router = express.Router();
 
@@ -79,4 +78,4 @@ router.put(
   })
 );
 
-export default router;
+module.exports = router;

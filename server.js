@@ -1,14 +1,12 @@
 const express = require("express");
 const dotenv = require("dotenv");
-const connectDB = require("./config/db");
-const userRoutes = require("./routes/userRoutes");
-const adminRoutes = require("./routes/adminRoutes");
-const productRoutes = require("./routes/productRoutes");
-const orderRoutes = require("./routes/orderRoutes");
-const { notFound, errorHandler } = require("./middleware/errorMiddleware");
+const connectDB = require("./config/db"); // Remove the .js extension
+const userRoutes = require("./routes/userRoutes"); // Remove the .js extension
+const adminRoutes = require("./routes/adminRoutes"); // Remove the .js extension
+const productRoutes = require("./routes/productRoutes"); // Remove the .js extension
+const orderRoutes = require("./routes/orderRoutes"); // Remove the .js extension
+const { notFound, errorHandler } = require("./middleware/errorMiddleware"); // Remove the .js extension
 const cors = require("cors");
-
-// Allow requests from your frontend
 
 dotenv.config();
 connectDB();
@@ -24,7 +22,6 @@ app.use(
 );
 
 app.use("/api/admin", adminRoutes);
-
 app.use("/api/users", userRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/orders", orderRoutes);
