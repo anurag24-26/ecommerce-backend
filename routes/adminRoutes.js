@@ -53,6 +53,16 @@ router.post(
 
 // ====================== PRODUCT MANAGEMENT ======================
 
+// Get All Products (Admin Only)
+router.get(
+  "/products",
+  protectAdmin,
+  asyncHandler(async (req, res) => {
+    const products = await Product.find({});
+    res.json(products);
+  })
+);
+
 // Create New Product (Admin Only)
 router.post(
   "/products",
