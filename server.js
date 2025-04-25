@@ -19,7 +19,7 @@ app.use(express.json());
 // Set up CORS
 app.use(
   cors({
-    origin: "http://localhost:5173", // Adjust as needed
+    origin: "*", // Adjust as needed
     credentials: true,
   })
 );
