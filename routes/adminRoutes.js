@@ -1,38 +1,32 @@
 const express = require("express");
-const Admin = require("../models/Admin"); // Remove .js extension
-const Product = require("../models/Product"); // Remove .js extension
 const asyncHandler = require("express-async-handler");
-const generateToken = require("../utils/generateToken"); // Remove .js extension
+const Admin = require("../models/Admin");
+const Product = require("../models/Product");
+const generateToken = require("../utils/generateToken");
+const { protectAdmin } = require("../middleware/adminProtect"); // Correct middleware file
 
 const router = express.Router();
+
+// ====================== ADMIN AUTH ======================
+
+// Register Admin
 router.post(
   "/register",
   asyncHandler(async (req, res) => {
     const { name, email, password } = req.body;
 
-    // Check if admin already exists
     const adminExists = await Admin.findOne({ email });
     if (adminExists) {
-      res.status(400);
-      throw new Error("Admin already exists");
+      res.status(400).json({ message: "Admin already exists" });
+      return;
     }
 
-    try {
-      // Create a new admin
-      const admin = new Admin({
-        name,
-        email,
-        password,
-      });
+    const admin = await Admin.create({ name, email, password });
 
-      // Save admin to DB
-      await admin.save();
-
-      res.status(201).json({
-        message: "Admin registered successfully",
-      });
-    } catch (error) {
-      res.status(500).json({ message: error.message || "Server Error" });
+    if (admin) {
+      res.status(201).json({ message: "Admin registered successfully" });
+    } else {
+      res.status(400).json({ message: "Invalid admin data" });
     }
   })
 );
@@ -42,6 +36,7 @@ router.post(
   "/login",
   asyncHandler(async (req, res) => {
     const { email, password } = req.body;
+
     const admin = await Admin.findOne({ email });
 
     if (admin && (await admin.matchPassword(password))) {
@@ -51,23 +46,29 @@ router.post(
         token: generateToken(admin._id),
       });
     } else {
-      res.status(401);
-      throw new Error("Invalid credentials");
+      res.status(401).json({ message: "Invalid email or password" });
     }
   })
 );
 
-// Add a Product (Admin Only)
+// ====================== PRODUCT MANAGEMENT ======================
+
+// Create New Product (Admin Only)
 router.post(
   "/products",
+  protectAdmin,
   asyncHandler(async (req, res) => {
-    const { title, description, price, image } = req.body;
+    const { name, description, price, image, brand, category, countInStock } =
+      req.body;
 
     const product = new Product({
-      title,
+      name,
       description,
       price,
       image,
+      brand,
+      category,
+      countInStock,
     });
 
     const createdProduct = await product.save();
@@ -75,37 +76,48 @@ router.post(
   })
 );
 
-// Delete a Product
-router.delete(
+// Update Product (Admin Only)
+router.put(
   "/products/:id",
+  protectAdmin,
   asyncHandler(async (req, res) => {
+    const { name, description, price, image, brand, category, countInStock } =
+      req.body;
+
     const product = await Product.findById(req.params.id);
-    if (product) {
-      await product.remove();
-      res.json({ message: "Product removed" });
-    } else {
-      res.status(404);
-      throw new Error("Product not found");
+
+    if (!product) {
+      res.status(404).json({ message: "Product not found" });
+      return;
     }
+
+    product.name = name || product.name;
+    product.description = description || product.description;
+    product.price = price || product.price;
+    product.image = image || product.image;
+    product.brand = brand || product.brand;
+    product.category = category || product.category;
+    product.countInStock = countInStock || product.countInStock;
+
+    const updatedProduct = await product.save();
+    res.json(updatedProduct);
   })
 );
 
-// Update Title/Description
-router.put(
+// Delete Product (Admin Only)
+router.delete(
   "/products/:id",
+  protectAdmin,
   asyncHandler(async (req, res) => {
-    const { title, description } = req.body;
     const product = await Product.findById(req.params.id);
 
-    if (product) {
-      product.title = title || product.title;
-      product.description = description || product.description;
-      const updatedProduct = await product.save();
-      res.json(updatedProduct);
-    } else {
-      res.status(404);
-      throw new Error("Product not found");
+    if (!product) {
+      res.status(404).json({ message: "Product not found" });
+      return;
     }
+
+    await product.remove();
+    res.json({ message: "Product removed" });
   })
 );
 
