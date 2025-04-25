@@ -19,8 +19,9 @@ app.use(express.json());
 // Set up CORS
 app.use(
   cors({
-    origin: "*", // Adjust as needed
-    credentials: true,
+    origin: "*", // Allows requests from any domain
+    methods: ["GET", "POST", "PUT", "DELETE"], // Ensure all necessary methods are allowed
+    credentials: true, // Allows cookies & authorization headers
   })
 );
 
