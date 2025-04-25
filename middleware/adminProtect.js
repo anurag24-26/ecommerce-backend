@@ -1,6 +1,5 @@
 const jwt = require("jsonwebtoken");
 const Admin = require("../models/Admin");
-
 const protectAdmin = async (req, res, next) => {
   let token;
 
@@ -11,14 +10,17 @@ const protectAdmin = async (req, res, next) => {
     try {
       token = req.headers.authorization.split(" ")[1];
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      req.user = await Admin.findById(decoded.id).select("-password");
+      console.log("Decoded Admin Token:", decoded); // Debugging Log
 
-      if (!req.user) {
+      req.user = await Admin.findById(decoded.id).select("-password");
+      console.log("Admin Found:", req.user); // Debugging Log
+
+      if (!req.user)
         return res.status(401).json({ message: "Admin not found" });
-      }
 
       next();
     } catch (error) {
+      console.log("Token verification error:", error); // Debugging Log
       return res.status(401).json({ message: "Not authorized, token failed" });
     }
   }
