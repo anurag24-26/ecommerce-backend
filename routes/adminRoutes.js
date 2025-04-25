@@ -30,6 +30,8 @@ router.post(
     }
   })
 );
+
+// Admin Login
 router.post(
   "/login",
   asyncHandler(async (req, res) => {
@@ -48,6 +50,7 @@ router.post(
     }
   })
 );
+
 // ====================== PRODUCT MANAGEMENT ======================
 
 // Get All Products (Admin Only)
