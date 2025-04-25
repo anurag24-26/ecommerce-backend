@@ -85,6 +85,24 @@ router.post(
     res.status(201).json(createdProduct);
   })
 );
+// Get Admin Profile
+router.get(
+  "/profile",
+  protectAdmin,
+  asyncHandler(async (req, res) => {
+    const admin = await Admin.findById(req.user._id);
+
+    if (admin) {
+      res.json({
+        _id: admin._id,
+        email: admin.email,
+        name: admin.name,
+      });
+    } else {
+      res.status(404).json({ message: "Admin not found" });
+    }
+  })
+);
 
 // Update Product (Admin Only)
 router.put(
