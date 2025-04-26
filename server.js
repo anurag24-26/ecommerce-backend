@@ -24,24 +24,35 @@ app.use(
 // Multer Storage (Temporary for File Uploads)
 const storage = multer.memoryStorage(); // Keep images in memory
 const upload = multer({ storage });
+const crypto = require("crypto");
 
 app.post("/api/upload", upload.single("image"), async (req, res) => {
   try {
     if (!req.file)
       return res.status(400).json({ message: "No image uploaded" });
 
-    const result = await cloudinary.uploader
-      .upload_stream({ folder: "products" }, (error, result) => {
-        if (error) {
-          console.error("Cloudinary upload failed:", error);
-          return res
-            .status(500)
-            .json({ message: "Cloudinary Upload Failed", error });
-        }
+    const timestamp = Math.round(new Date().getTime() / 1000);
+    const signatureString = `timestamp=${timestamp}&folder=products${process.env.CLOUDINARY_API_SECRET}`;
+    const signature = crypto
+      .createHash("sha1")
+      .update(signatureString)
+      .digest("hex");
 
-        console.log("Cloudinary Upload Successful:", result.secure_url);
-        res.json({ imageUrl: result.secure_url });
-      })
+    const result = await cloudinary.uploader
+      .upload_stream(
+        { folder: "products", timestamp, signature },
+        (error, result) => {
+          if (error) {
+            console.error("Cloudinary upload failed:", error);
+            return res
+              .status(500)
+              .json({ message: "Cloudinary Upload Failed", error });
+          }
+
+          console.log("Cloudinary Upload Successful:", result.secure_url);
+          res.json({ imageUrl: result.secure_url });
+        }
+      )
       .end(req.file.buffer);
   } catch (error) {
     console.error("Server Error:", error);
