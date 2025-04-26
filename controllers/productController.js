@@ -1,43 +1,56 @@
 const Product = require("../models/Product");
 
-// Update Product (Admin Only)
-const updateProduct = async (req, res) => {
+// Get all products
+const getAllProducts = async (req, res) => {
   try {
-    const product = await Product.findById(req.params.id);
-
-    if (!product) {
-      return res.status(404).json({ message: "Product not found" });
-    }
-
-    product.name = req.body.name || product.name;
-    product.price = req.body.price || product.price;
-    product.description = req.body.description || product.description;
-    product.image = req.body.image || product.image;
-    product.brand = req.body.brand || product.brand;
-    product.category = req.body.category || product.category;
-    product.countInStock = req.body.countInStock || product.countInStock;
-
-    const updatedProduct = await product.save();
-    res.json(updatedProduct);
+    const products = await Product.find({});
+    res.json(products);
   } catch (error) {
-    res.status(500).json({ message: "Server Error", error });
+    res.status(500).json({ message: "Error fetching products", error });
   }
 };
 
-// Delete Product (Admin Only)
+// Create a new product
+const createProduct = async (req, res) => {
+  try {
+    const product = new Product(req.body);
+    const savedProduct = await product.save();
+    res.status(201).json(savedProduct);
+  } catch (error) {
+    res.status(500).json({ message: "Error creating product", error });
+  }
+};
+
+// Update an existing product
+const updateProduct = async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+    if (!product) return res.status(404).json({ message: "Product not found" });
+
+    Object.assign(product, req.body);
+    const updatedProduct = await product.save();
+    res.json(updatedProduct);
+  } catch (error) {
+    res.status(500).json({ message: "Error updating product", error });
+  }
+};
+
+// Delete a product
 const deleteProduct = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
-
-    if (!product) {
-      return res.status(404).json({ message: "Product not found" });
-    }
+    if (!product) return res.status(404).json({ message: "Product not found" });
 
     await product.remove();
     res.json({ message: "Product removed successfully" });
   } catch (error) {
-    res.status(500).json({ message: "Server Error", error });
+    res.status(500).json({ message: "Error deleting product", error });
   }
 };
 
-module.exports = { updateProduct, deleteProduct };
+module.exports = {
+  getAllProducts,
+  createProduct,
+  updateProduct,
+  deleteProduct,
+};

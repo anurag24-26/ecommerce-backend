@@ -9,13 +9,9 @@ const { protectAdmin } = require("../middleware/adminProtect");
 
 const router = express.Router();
 
-router.get("/", getAllProducts); // Get all products
-router.post("/", protectAdmin, createProduct); // Create a product (Admin Only)
-
-// Add update product route
-router.put("/:id", protectAdmin, updateProduct); // Update a product (Admin Only)
-
-// Add delete product route
-router.delete("/:id", protectAdmin, deleteProduct); // Delete a product (Admin Only)
+router.get("/", getAllProducts);
+router.post("/", protectAdmin, createProduct);
+router.put("/:id", protectAdmin, updateProduct);
+router.delete("/:id", protectAdmin, deleteProduct);
 
 module.exports = router;
