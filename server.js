@@ -4,6 +4,7 @@ const connectDB = require("./config/db");
 const cors = require("cors");
 const multer = require("multer");
 const path = require("path");
+const cloudinary = require("./config/cloudinary"); // Import Cloudinary
 
 dotenv.config();
 connectDB();
@@ -20,18 +21,28 @@ app.use(
   })
 );
 
-// Setup Multer storage for file uploads
-const storage = multer.diskStorage({
-  destination: "uploads/",
-  filename: (req, file, cb) => cb(null, `${Date.now()}-${file.originalname}`),
-});
+// Multer Storage (Temporary for File Uploads)
+const storage = multer.memoryStorage(); // Keep images in memory
 const upload = multer({ storage });
 
-// Serve static uploads
-app.use("/uploads", express.static(path.join(__dirname, "/uploads")));
-app.post("/api/upload", upload.single("image"), (req, res) =>
-  res.json({ imageUrl: `/uploads/${req.file.filename}` })
-);
+// Cloudinary Image Upload Route
+app.post("/api/upload", upload.single("image"), async (req, res) => {
+  try {
+    const result = await cloudinary.uploader.upload_stream(
+      { folder: "products" },
+      (error, result) => {
+        if (error)
+          return res.status(500).json({ error: "Cloudinary Upload Failed" });
+
+        res.json({ imageUrl: result.secure_url });
+      }
+    );
+
+    req.file.stream.pipe(result);
+  } catch (error) {
+    res.status(500).json({ message: "Image upload failed", error });
+  }
+});
 
 // Routes
 const adminRoutes = require("./routes/adminRoutes");
