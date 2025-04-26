@@ -31,17 +31,10 @@ app.post("/api/upload", upload.single("image"), async (req, res) => {
       return res.status(400).json({ message: "No image uploaded" });
     }
 
-    const timestamp = Math.round(new Date().getTime() / 1000);
-    const signatureString = `timestamp=${timestamp}&folder=products${process.env.CLOUDINARY_API_SECRET}`;
-    const signature = crypto
-      .createHash("sha1")
-      .update(signatureString)
-      .digest("hex");
-
     const uploadPromise = () =>
       new Promise((resolve, reject) => {
         const stream = cloudinary.uploader.upload_stream(
-          { folder: "products", timestamp, signature },
+          { folder: "products" }, // just folder, no signature needed
           (error, result) => {
             if (error) {
               reject(error);
