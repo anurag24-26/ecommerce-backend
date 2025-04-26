@@ -13,6 +13,17 @@ router.get(
     res.json(products);
   })
 );
+// Get Single Product by ID
+router.get(
+  "/:id",
+  asyncHandler(async (req, res) => {
+    const product = await Product.findById(req.params.id);
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+    res.json(product);
+  })
+);
 
 // Create New Product (Admin Only)
 router.post(
