@@ -25,21 +25,26 @@ app.use(
 const storage = multer.memoryStorage(); // Keep images in memory
 const upload = multer({ storage });
 
-// Cloudinary Image Upload Route
 app.post("/api/upload", upload.single("image"), async (req, res) => {
   try {
-    const result = await cloudinary.uploader.upload_stream(
-      { folder: "products" },
-      (error, result) => {
-        if (error)
+    console.log("File received:", req.file); // Debugging Log
+
+    if (!req.file)
+      return res.status(400).json({ message: "No image uploaded" });
+
+    cloudinary.uploader
+      .upload_stream({ folder: "products" }, (error, result) => {
+        if (error) {
+          console.error("Cloudinary upload failed:", error); // Debug Log
           return res.status(500).json({ error: "Cloudinary Upload Failed" });
+        }
 
+        console.log("Cloudinary Upload Successful:", result.secure_url); // Debug Log
         res.json({ imageUrl: result.secure_url });
-      }
-    );
-
-    req.file.stream.pipe(result);
+      })
+      .end(req.file.buffer);
   } catch (error) {
+    console.error("Server Error:", error); // Debug Log
     res.status(500).json({ message: "Image upload failed", error });
   }
 });
