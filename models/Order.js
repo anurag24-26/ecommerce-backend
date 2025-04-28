@@ -23,8 +23,16 @@ const orderSchema = new mongoose.Schema(
     },
     paymentMethod: String,
     totalPrice: Number,
+    discountApplied: { type: Number, default: 0 }, // ✅ Tracks discount amount applied to order
+    finalPrice: Number, // ✅ Stores final amount after discount
     isPaid: { type: Boolean, default: false },
     paidAt: Date,
+    orderStatus: {
+      type: String,
+      enum: ["Processing", "Shipped", "Delivered", "Cancelled"],
+      default: "Processing", // ✅ Adds order tracking status
+    },
+    transactionId: { type: String, default: "" }, // ✅ Stores transaction details
   },
   { timestamps: true }
 );
