@@ -22,34 +22,34 @@ app.use(
 );
 
 // Multer Storage (Temporary for File Uploads)
-const storage = multer.memoryStorage(); // Keep images in memory
-const upload = multer({ storage }).array("images", 5); // Allow up to 5 images
-
-const crypto = require("crypto");
-app.post("/api/upload", upload, async (req, res) => {
+const storage = multer.memoryStorage(); // Update Multer to accept multiple images (max 5)
+const upload = multer({
+  storage,
+  limits: { files: 5 }, // Allow maximum 5 files
+});
+app.post("/api/upload", upload.array("images", 5), async (req, res) => {
   try {
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({ message: "No images uploaded" });
     }
 
-    const imageUrls = [];
-
-    for (let file of req.files) {
-      const result = await new Promise((resolve, reject) => {
-        cloudinary.uploader
-          .upload_stream({ folder: "products" }, (error, result) => {
-            if (error) reject(error);
-            else resolve(result);
+    const imageUrls = await Promise.all(
+      req.files.map(
+        (file) =>
+          new Promise((resolve, reject) => {
+            cloudinary.uploader
+              .upload_stream({ folder: "products" }, (error, result) => {
+                if (error) reject(error);
+                else resolve(result.secure_url);
+              })
+              .end(file.buffer);
           })
-          .end(file.buffer);
-      });
+      )
+    );
 
-      imageUrls.push(result.secure_url);
-    }
-
-    res.json({ imageUrls });
+    res.json({ imageUrls }); // ✅ Send array of images to frontend
   } catch (error) {
-    console.error("Server Error:", error);
+    console.error("Upload Error:", error);
     res.status(500).json({ message: "Image upload failed", error });
   }
 });
