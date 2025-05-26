@@ -3,6 +3,10 @@ const asyncHandler = require("express-async-handler");
 const Product = require("../models/Product");
 const { protectAdmin } = require("../middleware/adminProtect");
 
+const {
+  addProductReview,
+  getProductReviews,
+} = require("../controllers/productController");
 const router = express.Router();
 
 // Get All Products
@@ -25,6 +29,8 @@ router.get(
   })
 );
 
+router.post("/:productId/review", protect, addProductReview); // ✅ Route to submit a review
+router.get("/:productId/reviews", getProductReviews);
 // Create New Product (Admin Only)
 router.post(
   "/",
