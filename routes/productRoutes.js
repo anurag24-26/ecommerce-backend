@@ -2,7 +2,7 @@ const express = require("express");
 const asyncHandler = require("express-async-handler");
 const Product = require("../models/Product");
 const { protectAdmin } = require("../middleware/adminProtect");
-
+const { protect } = require("../middleware/authMiddleware");
 const {
   addProductReview,
   getProductReviews,
@@ -29,7 +29,7 @@ router.get(
   })
 );
 
-router.post("/:productId/review", protectAdmin, addProductReview); // ✅ Route to submit a review
+router.post("/:productId/review", protect, addProductReview); // ✅ Route to submit a review
 router.get("/:productId/reviews", getProductReviews);
 // Create New Product (Admin Only)
 router.post(
