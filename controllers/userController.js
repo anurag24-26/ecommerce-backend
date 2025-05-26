@@ -1,21 +1,20 @@
+// controllers/userController.js
 const User = require("../models/User");
 const generateToken = require("../utils/generateToken");
 
-// Register User (Updated)
+// Register User
 const registerUser = async (req, res) => {
-  const { name, email, password, phoneNumber } = req.body;
+  const { name, email, password } = req.body;
   const userExists = await User.findOne({ email });
   if (userExists)
     return res.status(400).json({ message: "User already exists" });
 
-  const user = await User.create({ name, email, password, phoneNumber });
-
+  const user = await User.create({ name, email, password });
   if (user) {
     res.status(201).json({
       _id: user._id,
       name: user.name,
       email: user.email,
-      phoneNumber: user.phoneNumber, // ✅ Added phone number in response
       isAdmin: user.isAdmin,
       token: generateToken(user._id),
     });
@@ -24,7 +23,7 @@ const registerUser = async (req, res) => {
   }
 };
 
-// Authenticate User (Updated)
+// Authenticate User
 const authUser = async (req, res) => {
   const { email, password } = req.body;
   const user = await User.findOne({ email });
@@ -34,7 +33,6 @@ const authUser = async (req, res) => {
       _id: user._id,
       name: user.name,
       email: user.email,
-      phoneNumber: user.phoneNumber, // ✅ Added phone number in response
       isAdmin: user.isAdmin,
       token: generateToken(user._id),
     });
@@ -43,7 +41,7 @@ const authUser = async (req, res) => {
   }
 };
 
-// Get Profile (Updated)
+// Get Profile
 const getUserProfile = async (req, res) => {
   const user = await User.findById(req.user._id);
   if (user) {
@@ -51,21 +49,8 @@ const getUserProfile = async (req, res) => {
       _id: user._id,
       name: user.name,
       email: user.email,
-      phoneNumber: user.phoneNumber, // ✅ Added phone number in response
       isAdmin: user.isAdmin,
     });
-  } else {
-    res.status(404).json({ message: "User not found" });
-  }
-};
-
-// Update Phone Number
-const updatePhoneNumber = async (req, res) => {
-  const user = await User.findById(req.user._id);
-  if (user) {
-    user.phoneNumber = req.body.phoneNumber || user.phoneNumber;
-    await user.save();
-    res.json({ message: "Phone number updated successfully!" });
   } else {
     res.status(404).json({ message: "User not found" });
   }
@@ -75,5 +60,4 @@ module.exports = {
   registerUser,
   authUser,
   getUserProfile,
-  updatePhoneNumber, // ✅ New function added to update phone number
 };
