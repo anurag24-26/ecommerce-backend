@@ -29,7 +29,7 @@ router.get(
   })
 );
 
-router.post("/:productId/review", protect, addProductReview); // ✅ Route to submit a review
+router.post("/:productId/review", protectAdmin, addProductReview); // ✅ Route to submit a review
 router.get("/:productId/reviews", getProductReviews);
 // Create New Product (Admin Only)
 router.post(
