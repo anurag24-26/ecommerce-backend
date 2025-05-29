@@ -60,7 +60,7 @@ const productRoutes = require("./routes/productRoutes");
 const userRoutes = require("./routes/userRoutes");
 const orderRoutes = require("./routes/orderRoutes");
 const cartRoutes = require("./routes/cartRoutes");
-const wishlistRoutes = require('./routes/wishlist');
+const wishlistRoutes = require("./routes/wishlistRoutes");
 
 app.use("/api/admin", adminRoutes);
 app.use("/api/products", productRoutes);
