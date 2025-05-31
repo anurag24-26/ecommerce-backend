@@ -4,32 +4,45 @@ const Product = require("../models/Product");
 // Get user's wishlist
 const getWishlist = async (req, res) => {
   try {
-    const wishlist = await Wishlist.findOne({ user: req.user._id }).populate("items");
+    const wishlist = await Wishlist.findOne({ user: req.user._id }).populate("items.product");
     if (!wishlist) return res.status(404).json({ message: "Wishlist not found" });
-    res.json(wishlist.items);
+
+    const products = wishlist.items.map((item) => item.product);
+    res.json(products);
   } catch (error) {
     res.status(500).json({ message: "Error fetching wishlist", error });
   }
 };
 
-// Add product to wishlist
+// Add multiple products to wishlist
 const addToWishlist = async (req, res) => {
-  const { productId } = req.body;
+  const { productIds } = req.body;
+
+  if (!Array.isArray(productIds) || productIds.length === 0) {
+    return res.status(400).json({ message: "Please provide a list of product IDs" });
+  }
 
   try {
     let wishlist = await Wishlist.findOne({ user: req.user._id });
     if (!wishlist) wishlist = new Wishlist({ user: req.user._id, items: [] });
 
-    const product = await Product.findById(productId);
-    if (!product) return res.status(404).json({ message: "Product not found" });
+    // Filter out invalid products
+    const validProducts = await Product.find({ _id: { $in: productIds } });
+    const validProductIds = validProducts.map((product) => product._id.toString());
 
-    const alreadyInWishlist = wishlist.items.some((item) => item.equals(productId));
-    if (alreadyInWishlist)
-      return res.status(400).json({ message: "Product already in wishlist" });
+    const existingProductIds = wishlist.items.map((item) => item.product.toString());
+    const newItems = validProductIds
+      .filter((id) => !existingProductIds.includes(id))
+      .map((id) => ({ product: id, addedAt: new Date() }));
 
-    wishlist.items.push(productId);
+    if (newItems.length === 0) {
+      return res.status(400).json({ message: "All products are already in wishlist or invalid" });
+    }
+
+    wishlist.items.push(...newItems);
     await wishlist.save();
-    res.json({ message: "Added to wishlist", wishlist });
+
+    res.json({ message: "Products added to wishlist", wishlist });
   } catch (error) {
     res.status(500).json({ message: "Error adding to wishlist", error });
   }
@@ -42,7 +55,7 @@ const removeFromWishlist = async (req, res) => {
     if (!wishlist) return res.status(404).json({ message: "Wishlist not found" });
 
     wishlist.items = wishlist.items.filter(
-      (item) => !item.equals(req.params.productId)
+      (item) => item.product.toString() !== req.params.productId
     );
 
     await wishlist.save();
